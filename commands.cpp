@@ -202,6 +202,12 @@ void gps_status(void) {
 	Serial.printf("\tisUpdated ...: %d \n\r", gps.satellites.isUpdated());
 	Serial.printf("\tage .........: %d \n\r", gps.satellites.age());
 	Serial.printf("\tvalue .......: %d \n\r", gps.satellites.value());
+
+	Serial.println("hdop:");
+	Serial.printf("\tisValid .....: %d \n\r", gps.hdop.isValid());
+	Serial.printf("\tisUpdated ...: %d \n\r", gps.hdop.isUpdated());
+	Serial.printf("\tage .........: %d \n\r", gps.hdop.age());
+	Serial.printf("\tvalue .......: %d \n\r", gps.hdop.value());
 	
 	Serial.println("time:");
 	Serial.printf("\tisValid .....: %d \n\r", gps.time.isValid());
