@@ -8,6 +8,8 @@
  * 
  * @author    Alan P. Summerlin
  * 
+ * @brief     A fence is created by storing 3 to 8 "points". If the device 
+ *            goes outside the fence, an alert is sent to the LoRa host.
  * 
  ** ------------------------------------------------------------------------ */
 #include "geofence.h"
@@ -89,4 +91,11 @@ bool GeoFence::loadFenceFromFile(char * file) {
 bool GeoFence::isInsideFence(void) {
 
     return true;
+}
+
+void GeoFence::resetFence(void) {
+    //
+    // Resets the pointIdx to 0. Fence points can be set again.
+    //
+    pointIdx = 0;
 }
