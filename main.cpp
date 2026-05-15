@@ -418,7 +418,7 @@ void display_gps_data(void) {
 	display.setCursor(0, 0);
 	display.println(APP_NAME);
 
-	if (gps.location.isUpdated()) {
+	if (gps.location.isValid()) {
 		//
 		//
 		display.fillRect(0, 16, display.width(), 8, BLACK);
@@ -434,7 +434,7 @@ void display_gps_data(void) {
 		g_gps_data_available = true;
 	}
 	
-	if ((gps.date.isUpdated() || gps.time.isUpdated()) && (gps.date.year() != 2000)) {
+	if (gps.date.isValid() && gps.time.isValid()) { //(gps.date.isUpdated() || gps.time.isUpdated()) && (gps.date.year() != 2000)) {
 		//
 		// Display GPS time
 		//
@@ -472,7 +472,7 @@ void display_gps_data(void) {
 #endif		
 	}
 	
-	if (gps.speed.isUpdated()) {
+	if (gps.speed.isValid()) {
 
 #if 1
 		display.fillRect(0, 43, display.width(), 8, BLACK);
@@ -482,11 +482,11 @@ void display_gps_data(void) {
 #endif		
 
 	}
-	if (gps.course.isUpdated()) {
+	if (gps.course.isValid()) {
 
 	}
 	
-	if (gps.altitude.isUpdated()) {
+	if (gps.altitude.isValid()) {
 		//
 		//
 		display.fillRect(0, 34, display.width(), 8, BLACK);
@@ -496,11 +496,12 @@ void display_gps_data(void) {
 
 	}
 	
-	if (gps.satellites.isUpdated()) {
+	if (gps.satellites.isValid()) {
 
 	}
 	
-	if (gps.hdop.isUpdated()) {
+	if (gps.hdop.isValid()) {
+		
 
 	}
 
