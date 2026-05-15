@@ -1,3 +1,5 @@
+#ifndef commands_h
+#define commands_h
 /** ---------------------------------------------------------------------------
  * @file      geofence.h
  * 
@@ -34,4 +36,7 @@ class GeoFence {
         double calculateAngle(double bearingAB, double bearingAC);
         bool loadFenceFromFile(char * file);
         bool isInsideFence(void);
+        void resetFence(void);
 };
+
+#endif
