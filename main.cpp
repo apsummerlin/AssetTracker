@@ -52,6 +52,7 @@
 #include "cmd_proc.h"				// Command processor library (APS)
 #include "commands.h"				//
 #include "config.h"					// Program configuration structure, etc. 
+#include "file_util.h"
 #include "flash_config.h"			// SPI Flash configuration
 #include "lora.h"					// Private LoRa protocol (APS)
 #include "RTClib.h"					// Real Time Clock support
@@ -72,7 +73,6 @@
 #define SCREEN_HEIGHT 		64 		// OLED display height, in pixels
 #define	BUF_SiZE			256
 
-
 const 	String 				log_filename = "data.csv";
 const	String				settings_filename = "settings.txt";
 int 	pinLoRaReset = 8;
@@ -86,14 +86,6 @@ bool	g_gps_data_available = false;
 void location(void);
 void display_gps_data(void);
 void gps_log(void);
-void directory(void);
-void ShowFreeSpace(void);
-void delete_file(void);
-void print_file(void);
-void print_text_file(const char *name);
-void rename_file(void);
-void clear_gps_log(void);
-
 
 // Real Time Clock support.
 //
@@ -143,16 +135,16 @@ ProgramConfiguration_t m_configuration;
 String m_states[] = {"disabled", "enabled"};
 String m_modes[] = {"periodic", "motion triggered"};
 
-/*
- * Configure the IRQ Handler for UART Serial2.
- */
+ /**
+  * Configure the IRQ Handler for UART Serial2. 
+  */
 void SERCOM2_Handler() {
     Serial2.IrqHandler();
 }
 
-
-//------------------------------------------------------------------------------
-// Call back for file timestamps.  Only called for file create and sync().
+/**
+ * Call back for file timestamps.  Only called for file create and sync().
+ */
 void dateTimeCallback(uint16_t* date, uint16_t* time, uint8_t* ms10) {
   DateTime now = rtc.now();
 
@@ -166,6 +158,10 @@ void dateTimeCallback(uint16_t* date, uint16_t* time, uint8_t* ms10) {
   *ms10 = now.second() & 1 ? 100 : 0;
 }
 
+/**
+ * This is the setup() function for the application.
+ * It takes no parameters and returns nothing.
+ */
 void setup() {
 	//
 	// Setup code - runs once at startup
@@ -266,19 +262,14 @@ void setup() {
 
 }
 
-/** ---------------------------------------------------------------------------
- * @brief main()
- * 
- * @return nothing
- ** ------------------------------------------------------------------------ */
+ /**
+  * The loop() function runs "forever"
+  * - Poll Serial (the debug port) and process commands received.
+  * - Poll Serial1 (the GPS port) - only receiving data from here.
+  * - Poll the LoRa port and process any commands received.
+  */
 void loop() {
-	/*
-	 * Main loop runs "forever".
-	 *  - Poll Serial (the debug port) and process commands received.
-	 *  - Poll Serial1 (the GPS port) - only receiving data from here.
-	 *  - Poll the LoRa port and process any commands received.
-	 * 
-	 */
+
 	millsnow = millis();
 
 	while (usbserial.read()) {
@@ -324,6 +315,10 @@ void loop() {
 	}
 }
 
+/**
+ * This function is uesd to log GPS data.
+ * 
+ */
 void gps_log(void) {
 	
 	static bool dataAvailable = true;
@@ -380,21 +375,10 @@ void gps_log(void) {
 	}
 }
 
-// Clear old contents from the log file.
-//
-void clear_gps_log(void) {
 
-	File32 logFile = fatfs.open(log_filename, O_RDWR | O_CREAT | O_TRUNC);
-
-	if (logFile) {
-		Serial.println("Clearing the log file.");
-		logFile.println("type,time,latitude,longitude,alt,speed");
-		logFile.close();
-	} else {
-		Serial.println("Error, could not clear the log file.");
-	}
-}
-
+/**
+ * TODO: Keep ot remove??
+ */
 void location(void) {
 	sprintf(
 		buffer, 
@@ -408,7 +392,9 @@ void location(void) {
 
 }
 
-
+/**
+ * Display GPS data.
+ */
 void display_gps_data(void) {
 	//static uint8_t last_second = 0;
 	char buffer[50];
@@ -509,78 +495,4 @@ void display_gps_data(void) {
 }
 
 
-void directory(void) {	
-	//
-	// Display a directory of files in root.
-	//
-	Serial.printf("\n\rDir of root:\n\r");
-	fatfs.ls(LS_A | LS_DATE | LS_SIZE | LS_R);
-	ShowFreeSpace();		
-	Serial.println();
-}
-
-void ShowFreeSpace(void) {
-	//
-	// Show total spi flash memory
-	// Calculate and show free spi flash memory
-	//
-	uint32_t freeClusters = fatfs.freeClusterCount();
-    uint32_t bytesPerCluster = fatfs.sectorsPerCluster() * 512;
-    uint32_t freeBytes = freeClusters * bytesPerCluster;
-    
-    Serial.printf("Total flash size %d bytes.\n\rSpace available: %d bytes\n\r", flash.size(), freeBytes);
-}
-
-void delete_file(void) {
-
-	Serial.print("Delete file: ");
-
-	if (cmd_proc.num_tokens > 1) {
-		// Get file File name 
-		//
-		// TODO: Verify with the use the file to be deleted.
-		//
-		Serial.printf("%s ", cmd_proc.tokens[1].c_str());
-
-		File32 deleteFile = fatfs.open(cmd_proc.tokens[1].c_str(), FILE_WRITE);
-		deleteFile.close();
-
-		if(fatfs.remove(cmd_proc.tokens[1].c_str())) {
-			Serial.println("Success");
-		} else {
-			Serial.println("Error, unable to delete file");
-		}
-	} else {
-		Serial.println("Error, no file specified");
-	}
-}
-
-void print_file(void) {
-
-	if (cmd_proc.num_tokens > 1) {
-		// Get file File name 
-		print_text_file(cmd_proc.tokens[1].c_str());
-	} else {
-		Serial.println("Error, no file specified");
-	}
-}
-
-
-void rename_file(void) {
-	if (cmd_proc.num_tokens > 2) {
-		//
-		// TODO: Verify with the user the file to be renamed.
-		//
-		Serial.printf("Renaming %s to %s\n\r", cmd_proc.tokens[1].c_str(), cmd_proc.tokens[1].c_str());
-
-		if(fatfs.rename(cmd_proc.tokens[1].c_str(), cmd_proc.tokens[2].c_str())) {
-			Serial.print("Success!\n");
-		} else {
-			Serial.print("Error, unable to rename file.\n");
-		}
-	} else {
-		Serial.print("Error, too few arguments.\n");
-	}
-}
-
-
+/* ---- Fnd of File ---- */

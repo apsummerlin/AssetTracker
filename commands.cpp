@@ -1,3 +1,15 @@
+/** ---------------------------------------------------------------------------
+ * @file      commands.cpp
+ * 
+ * @details   Command support functions.
+ * 
+ * @copyright (c)2026, Alan P. Summerlin
+ * 
+ * @author    Alan P. Summerlin
+ * 
+ * @brief     Command support functions.
+ * 
+ ** ------------------------------------------------------------------------ */
 
 #include <Arduino.h>
 #include "commands.h"
@@ -21,6 +33,9 @@ extern TinyGPSPlus gps;
 File32 fileToSend;
 
 
+/**
+ * send a file with xmodem (experimental)
+ */
 void send_file(void) {
 	
 	if (cmd_proc.num_tokens > 1) {
@@ -38,6 +53,10 @@ void send_file(void) {
 	Serial.println("Done");
 }
 
+/**
+ * Send a file with the xmodem protocol.
+ * Limited to 10K file size.
+ */
 void send_small_file(void) {
 
 	byte send_data[MAX_FILE_SIZE];
@@ -72,7 +91,9 @@ void send_small_file(void) {
 	Serial.println(F("Done"));
 }
 
-
+/**
+ *  Make a directory.
+ */
 void make_directory(void) {
 	Serial.printf("Make directory %s: ", cmd_proc.tokens[1].c_str());
 	if (cmd_proc.num_tokens > 1) {
@@ -90,6 +111,9 @@ void make_directory(void) {
 	}
 }
 
+/**
+ * Delete the specified directory.
+ */
 void delete_directory(void) {
 	File32 deleteDir = fatfs.open(cmd_proc.tokens[1].c_str());
 
@@ -102,7 +126,9 @@ void delete_directory(void) {
 	}
 }
 
-// This does not seem to work
+/**
+ * Change the directory - not working! (TODO: Remove ??)
+ */
 void change_directory(void) {
 	//File32 changeDir = fatfs.open(cmd_proc.tokens[1].c_str());
 
@@ -117,14 +143,10 @@ void change_directory(void) {
 	}
 }
 
-
-/** ---------------------------------------------------------------------------
- * @brief time()
- * 
- * 
- * 
- * @return nothing
- ** ------------------------------------------------------------------------ */
+ /**
+  * This function supports the 'time' command. Its used to read or set the
+  * current time.
+  */
 void time(void) {
 	// Get or Set time for RTC
 	//
@@ -196,6 +218,9 @@ void time(void) {
 	}
 }
 
+/**
+ * Display the current GPS status data.
+ */
 void gps_status(void) {
 	Serial.println("satalites:");
 	Serial.printf("\tisValid .....: %d \n\r", gps.satellites.isValid());
